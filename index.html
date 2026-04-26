@@ -809,19 +809,34 @@
     show(answerCard);
 
     /* Sources — only render if present and a non-empty string */
-    const rawSources = typeof data.sources === 'string' ? data.sources.trim() : '';
-    if (rawSources) {
-      const parts = rawSources.split('|').map(s => s.trim()).filter(Boolean);
-      if (parts.length > 0) {
-        sourcesList.innerHTML = parts.map(s => `
-          <div class="source-row">
-            <span class="source-bullet" aria-hidden="true"></span>
-            <span>${esc(s)}</span>
-          </div>
-        `).join('');
-        show(sourcesCard);
-      }
+   const rawSources = typeof data.sources === 'string' ? data.sources.trim() : '';
+if (rawSources) {
+  const parts = rawSources.split('|').map(s => s.trim()).filter(Boolean);
+
+  const groupedSources = [];
+  for (let i = 0; i < parts.length; i += 3) {
+    const course = parts[i] || '';
+    const module = parts[i + 1] || '';
+    const lesson = parts[i + 2] || '';
+
+    const fullSource = [course, module, lesson].filter(Boolean).join(' | ');
+    if (fullSource) {
+      groupedSources.push(fullSource);
     }
+  }
+
+  const uniqueSources = [...new Set(groupedSources)];
+
+  if (uniqueSources.length > 0) {
+    sourcesList.innerHTML = uniqueSources.map(source => `
+      <div class="source-row">
+        <span class="source-bullet" aria-hidden="true"></span>
+        <span>${esc(source)}</span>
+      </div>
+    `).join('');
+    show(sourcesCard);
+  }
+}
   }
 
   /* Strip optional "Answer: " prefix returned by the backend */
