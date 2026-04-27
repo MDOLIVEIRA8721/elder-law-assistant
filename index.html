@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Elder Law Knowledge Assistant</title>
+  <title>Elder Law College Assistant</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -528,10 +528,7 @@
       <span class="badge-dot"></span>
       Knowledge Assistant
     </div>
-    <h1 class="header-title">Elder Law Knowledge Assistant</h1>
-    <p class="header-subtitle">
-      Ask questions based on the firm's webinar materials
-    </p>
+    <h1 class="header-title">Elder Law College Assistant</h1>
     <p class="header-note">
       Answers are grounded in curated webinar content — not general web knowledge.
     </p>
@@ -545,11 +542,11 @@
     <textarea
       id="questionInput"
       class="question-textarea"
-      lang="en"
-      spellcheck="false"
       placeholder="Ask a question about elder law, Medicaid planning, long-term care, or practice transition..."
       rows="4"
       maxlength="1000"
+      lang="en"
+      spellcheck="false"
     ></textarea>
     <div class="input-footer">
       <span class="char-count"><span id="charCount">0</span>&thinsp;/&thinsp;1000</span>
@@ -570,14 +567,20 @@
       <button class="chip" onclick="fillQuestion('What is elder law?')">
         ⚖️&nbsp; What is elder law?
       </button>
-      <button class="chip" onclick="fillQuestion('How does Medicaid planning work?')">
-        🏥&nbsp; How does Medicaid planning work?
+      <button class="chip" onclick="fillQuestion('Why is long-term care planning important?')">
+        🏠&nbsp; Why is long-term care planning important?
       </button>
       <button class="chip" onclick="fillQuestion('How can a lawyer transition into elder law?')">
         💼&nbsp; How can a lawyer transition into elder law?
       </button>
-      <button class="chip" onclick="fillQuestion('Why is long-term care planning important?')">
-        🏠&nbsp; Why is long-term care planning important?
+      <button class="chip" onclick="fillQuestion('What does Medicaid help cover in elder law?')">
+        🏥&nbsp; What does Medicaid help cover in elder law?
+      </button>
+      <button class="chip" onclick="fillQuestion('How does elder law differ from traditional estate planning?')">
+        📋&nbsp; How does elder law differ from traditional estate planning?
+      </button>
+      <button class="chip" onclick="fillQuestion('What are the core practice areas a lawyer should learn first in elder law?')">
+        🎓&nbsp; What are the core practice areas a lawyer should learn first in elder law?
       </button>
     </div>
   </div>
@@ -667,10 +670,7 @@
 
   <!-- ── Footer ──────────────────────────────────────────────────────── -->
   <footer class="footer">
-    <p class="footer-text">
-      This MVP is powered by an initial set of webinar materials and is intended for controlled testing.<br>
-      Answers reflect the content of curated materials and may not cover all elder law topics.
-    </p>
+    <p class="footer-text">Grounded answers from curated elder law training materials.</p>
   </footer>
 
 </div><!-- /page -->
@@ -810,40 +810,42 @@
     answerText.textContent = stripAnswerPrefix(rawAnswer);
     show(answerCard);
 
-    /* Sources — only render if present and a non-empty string */
-   const rawSources = typeof data.sources === 'string' ? data.sources.trim() : '';
-if (rawSources) {
-  const parts = rawSources.split('|').map(s => s.trim()).filter(Boolean);
+    /* Sources — group into course|module|lesson triplets, deduplicate */
+    const rawSources = typeof data.sources === 'string' ? data.sources.trim() : '';
+    if (rawSources) {
+      const parts = rawSources.split('|').map(s => s.trim()).filter(Boolean);
 
-  const groupedSources = [];
-  for (let i = 0; i < parts.length; i += 3) {
-    const course = parts[i] || '';
-    const module = parts[i + 1] || '';
-    const lesson = parts[i + 2] || '';
+      const groupedSources = [];
+      for (let i = 0; i < parts.length; i += 3) {
+        const course = parts[i] || '';
+        const module = parts[i + 1] || '';
+        const lesson = parts[i + 2] || '';
 
-    const fullSource = [course, module, lesson].filter(Boolean).join(' | ');
-    if (fullSource) {
-      groupedSources.push(fullSource);
+        const fullSource = [course, module, lesson].filter(Boolean).join(' | ');
+        if (fullSource) {
+          groupedSources.push(fullSource);
+        }
+      }
+
+      const uniqueSources = [...new Set(groupedSources)];
+
+      if (uniqueSources.length > 0) {
+        sourcesList.innerHTML = uniqueSources.map(source => `
+          <div class="source-row">
+            <span class="source-bullet" aria-hidden="true"></span>
+            <span>${esc(source)}</span>
+          </div>
+        `).join('');
+        show(sourcesCard);
+      }
     }
   }
 
-  const uniqueSources = [...new Set(groupedSources)];
-
-  if (uniqueSources.length > 0) {
-    sourcesList.innerHTML = uniqueSources.map(source => `
-      <div class="source-row">
-        <span class="source-bullet" aria-hidden="true"></span>
-        <span>${esc(source)}</span>
-      </div>
-    `).join('');
-    show(sourcesCard);
-  }
-}
-  }
-
-  /* Strip optional "Answer: " prefix returned by the backend */
+  /* Strip optional "Answer: " prefix and trailing "Source(s):" section */
   function stripAnswerPrefix(text) {
-    return text.replace(/^Answer:\s*/i, '').trim();
+    let result = text.replace(/^Answer:\s*/i, '').trim();
+    result = result.replace(/\n+Sources?:[\s\S]*$/i, '').trim();
+    return result;
   }
 
   /* Main submit handler */
